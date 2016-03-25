@@ -9,10 +9,6 @@
     app:rb_radius="10dp"
     app:rb_rippleAmount="3"
     app:rb_scale="50">
-    <ImageView
-        android:layout_width="64dp"
-        android:layout_height="64dp"
-        android:layout_centerInParent="true"
-        android:id="@+id/centerImage"/>
+
 
 </com.skyfishjy.library.RippleBackground>

@@ -97,8 +97,8 @@ public class RippleBackground extends RelativeLayout {
 
     private void setupAnimations() {
         animatorSet = new AnimatorSet();
-        animatorSet.setInterpolator(new AccelerateDecelerateInterpolator());
         animatorSetScale = new AnimatorSet();
+        animatorSet.setInterpolator(new AccelerateDecelerateInterpolator());
         animatorSetScale.setInterpolator(new AccelerateDecelerateInterpolator());
         animatorList = new ArrayList<>();
         animatorListScale = new ArrayList<>();
@@ -137,13 +137,13 @@ public class RippleBackground extends RelativeLayout {
     }
 
     private void setupImageViews() {
+        rippleViewList.clear();
         for (int i = 0; i < rippleAmount; i++) {
             final ImageView imageView = new ImageView(getContext());
             imageView.setLayoutParams(rippleParams);
             imageView.setImageDrawable(rippleDrawable);
-            imageView.setMaxWidth(maxSizeImageView);
-            imageView.setMaxHeight(maxSizeImageView);
             imageView.setVisibility(GONE);
+            imageView.setAlpha(0f);
             addView(imageView);
             rippleViewList.add(imageView);
             final ObjectAnimator scaleXAnimator = ObjectAnimator.ofFloat(imageView, "ScaleX", 1.0f, rippleScale);
@@ -172,6 +172,7 @@ public class RippleBackground extends RelativeLayout {
                 @Override
                 public void onAnimationEnd(Animator animation) {
                     removeView(imageView);
+                    rippleViewList.remove(imageView);
                 }
 
                 @Override
@@ -191,27 +192,7 @@ public class RippleBackground extends RelativeLayout {
             alphaAnimator.setStartDelay(i * rippleDelay);
             alphaAnimator.setDuration(rippleDurationTime);
 //            alphaAnimator.setInterpolator(0.8);
-            alphaAnimator.addListener(new Animator.AnimatorListener() {
-                @Override
-                public void onAnimationStart(Animator animation) {
 
-                }
-
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    imageView.setVisibility(GONE);
-                }
-
-                @Override
-                public void onAnimationCancel(Animator animation) {
-
-                }
-
-                @Override
-                public void onAnimationRepeat(Animator animation) {
-
-                }
-            });
             animatorList.add(alphaAnimator);
         }
     }

@@ -117,7 +117,7 @@ public class RippleBackground extends RelativeLayout {
                         animationRunning = false;
                         startRippleAnimation();
                     }
-                }, 500);
+                }, 300);
             }
 
             @Override

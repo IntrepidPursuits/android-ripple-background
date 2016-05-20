@@ -47,7 +47,6 @@ public class RippleBackground extends RelativeLayout {
 
         @Override
         public void run() {
-            animationRunning = false;
             startRippleAnimation();
         }
     }
@@ -99,7 +98,6 @@ public class RippleBackground extends RelativeLayout {
 
         rippleParams = new LayoutParams((int) (2 * (rippleRadius + rippleStrokeWidth)), (int) (2 * (rippleRadius + rippleStrokeWidth)));
         rippleParams.addRule(CENTER_IN_PARENT, TRUE);
-        setupAnimations();
     }
 
     private void setupAnimations() {
@@ -109,8 +107,6 @@ public class RippleBackground extends RelativeLayout {
         animatorSetScale = new AnimatorSet();
         animatorSet.setInterpolator(new AccelerateDecelerateInterpolator());
         animatorSetScale.setInterpolator(new AccelerateDecelerateInterpolator());
-        animatorList = new ArrayList<>();
-        animatorListScale = new ArrayList<>();
         animatorSetScale.addListener(new Animator.AnimatorListener() {
             @Override
             public void onAnimationStart(Animator animation) {
@@ -139,6 +135,8 @@ public class RippleBackground extends RelativeLayout {
     }
 
     private void setupImageViews() {
+        animatorList = new ArrayList<>();
+        animatorListScale = new ArrayList<>();
         rippleViewList.clear();
         for (int i = 0; i < rippleAmount; i++) {
             final ImageView imageView = new ImageView(getContext());
@@ -191,6 +189,10 @@ public class RippleBackground extends RelativeLayout {
 
     public void startRippleAnimation() {
         if (!isAnimationRunning()) {
+            setupAnimations();
+            for (ImageView rippleView : rippleViewList) {
+                rippleView.setVisibility(VISIBLE);
+            }
             animatorSet.start();
             animatorSetScale.start();
         }

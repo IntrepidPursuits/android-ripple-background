@@ -15,16 +15,13 @@ import android.widget.RelativeLayout;
 
 import java.util.ArrayList;
 
-/**
- * Created by fyu on 11/3/14.
- */
-
 public class RippleBackground extends RelativeLayout {
 
     private static final int DEFAULT_RIPPLE_COUNT = 6;
     private static final int DEFAULT_DURATION_TIME = 3000;
     private static final float DEFAULT_SCALE = 6.0f;
     private static final int DEFAULT_FILL_TYPE = 0;
+    public static final int RESET_DELAY = 300;
 
     private int rippleColor;
     private float rippleStrokeWidth;
@@ -37,13 +34,23 @@ public class RippleBackground extends RelativeLayout {
     private int rippleType;
     private Drawable rippleDrawable;
     private Paint paint;
+
+    private Handler handler;
+    private RepeatAnimationRunnable repeatAnimationRunnable;
     private boolean animationRunning = false;
-    private boolean ovalView;
-    int max = 2000, min = 0;
     private AnimatorSet animatorSet, animatorSetScale;
     private ArrayList<Animator> animatorList, animatorListScale;
     private LayoutParams rippleParams;
     private ArrayList<ImageView> rippleViewList = new ArrayList<>();
+
+    private class RepeatAnimationRunnable implements Runnable {
+
+        @Override
+        public void run() {
+            animationRunning = false;
+            startRippleAnimation();
+        }
+    }
 
     public RippleBackground(Context context) {
         super(context);
@@ -60,8 +67,9 @@ public class RippleBackground extends RelativeLayout {
     }
 
     private void init(final Context context, final AttributeSet attrs) {
-        if (isInEditMode())
+        if (isInEditMode()) {
             return;
+        }
 
         if (null == attrs) {
             throw new IllegalArgumentException("Attributes should be provided to this view,");
@@ -96,6 +104,8 @@ public class RippleBackground extends RelativeLayout {
     }
 
     private void setupAnimations() {
+        handler = new Handler();
+        repeatAnimationRunnable = new RepeatAnimationRunnable();
         animatorSet = new AnimatorSet();
         animatorSetScale = new AnimatorSet();
         animatorSet.setInterpolator(new AccelerateDecelerateInterpolator());
@@ -110,14 +120,7 @@ public class RippleBackground extends RelativeLayout {
 
             @Override
             public void onAnimationEnd(Animator animation) {
-//                stopRippleAnimation();
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        animationRunning = false;
-                        startRippleAnimation();
-                    }
-                }, 300);
+                handler.postDelayed(repeatAnimationRunnable, RESET_DELAY);
             }
 
             @Override
@@ -130,7 +133,6 @@ public class RippleBackground extends RelativeLayout {
 
             }
         });
-
         setupImageViews();
         animatorSet.playTogether(animatorList);
         animatorSetScale.playTogether(animatorListScale);
@@ -147,20 +149,14 @@ public class RippleBackground extends RelativeLayout {
             addView(imageView);
             rippleViewList.add(imageView);
             final ObjectAnimator scaleXAnimator = ObjectAnimator.ofFloat(imageView, "ScaleX", 1.0f, rippleScale);
-//            scaleXAnimator.setRepeatCount(ObjectAnimator.INFINITE);
-//            scaleXAnimator.setRepeatMode(ObjectAnimator.RESTART);
             scaleXAnimator.setStartDelay(i * rippleDelay);
             scaleXAnimator.setDuration(rippleDurationTime);
             animatorListScale.add(scaleXAnimator);
             final ObjectAnimator scaleYAnimator = ObjectAnimator.ofFloat(imageView, "ScaleY", 1.0f, rippleScale);
-//            scaleYAnimator.setRepeatCount(ObjectAnimator.INFINITE);
-//            scaleYAnimator.setRepeatMode(ObjectAnimator.RESTART);
             scaleYAnimator.setStartDelay(i * rippleDelay);
             scaleYAnimator.setDuration(rippleDurationTime);
             animatorListScale.add(scaleYAnimator);
             final ObjectAnimator alphaAnimatorStart = ObjectAnimator.ofFloat(imageView, "Alpha", 0f, 1.0f);
-//            alphaAnimatorStart.setRepeatCount(ObjectAnimator.INFINITE);
-//            alphaAnimatorStart.setRepeatMode(ObjectAnimator.RESTART);
             alphaAnimatorStart.setStartDelay(i * rippleDelay);
             alphaAnimatorStart.setDuration(rippleDurationTime);
             alphaAnimatorStart.addListener(new Animator.AnimatorListener() {
@@ -187,19 +183,15 @@ public class RippleBackground extends RelativeLayout {
             });
             animatorList.add(alphaAnimatorStart);
             final ObjectAnimator alphaAnimator = ObjectAnimator.ofFloat(imageView, "Alpha", 1.0f, 0f);
-//            alphaAnimator.setRepeatCount(ObjectAnimator.INFINITE);
-//            alphaAnimator.setRepeatMode(ObjectAnimator.RESTART);
             alphaAnimator.setStartDelay(i * rippleDelay);
             alphaAnimator.setDuration(rippleDurationTime);
-//            alphaAnimator.setInterpolator(0.8);
-
             animatorList.add(alphaAnimator);
         }
     }
 
 
     public void startRippleAnimation() {
-        if (!isRippleAnimationRunning()) {
+        if (!isAnimationRunning()) {
             setupAnimations();
             for (ImageView rippleView : rippleViewList) {
                 rippleView.setVisibility(VISIBLE);
@@ -211,14 +203,9 @@ public class RippleBackground extends RelativeLayout {
     }
 
     public void stopRippleAnimation() {
-        if (isRippleAnimationRunning()) {
-            animatorSet.end();
-            animationRunning = false;
-        }
-    }
-
-    public boolean isRippleAnimationRunning() {
-        return animationRunning;
+        animatorSet.cancel();
+        animationRunning = false;
+        handler.removeCallbacks(repeatAnimationRunnable);
     }
 
     public float getRippleRadius() {

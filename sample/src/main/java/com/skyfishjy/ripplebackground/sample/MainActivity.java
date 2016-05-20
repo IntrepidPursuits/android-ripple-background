@@ -9,15 +9,25 @@ import com.skyfishjy.library.ripplebackground.sample.R;
 
 public class MainActivity extends Activity {
 
+    private RippleBackground rippleBackground;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        final RippleBackground rippleBackground = (RippleBackground) findViewById(R.id.content);
-        rippleBackground.startRippleAnimation();
-
+        rippleBackground = (RippleBackground) findViewById(R.id.content);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        rippleBackground.startRippleAnimation();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        rippleBackground.stopRippleAnimation();
+    }
 }

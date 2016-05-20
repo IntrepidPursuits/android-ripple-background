@@ -100,7 +100,6 @@ public class RippleBackground extends RelativeLayout {
         rippleParams = new LayoutParams((int) (2 * (rippleRadius + rippleStrokeWidth)), (int) (2 * (rippleRadius + rippleStrokeWidth)));
         rippleParams.addRule(CENTER_IN_PARENT, TRUE);
         setupAnimations();
-
     }
 
     private void setupAnimations() {
@@ -115,11 +114,12 @@ public class RippleBackground extends RelativeLayout {
         animatorSetScale.addListener(new Animator.AnimatorListener() {
             @Override
             public void onAnimationStart(Animator animation) {
-
+                animationRunning = true;
             }
 
             @Override
             public void onAnimationEnd(Animator animation) {
+                animationRunning = false;
                 handler.postDelayed(repeatAnimationRunnable, RESET_DELAY);
             }
 
@@ -189,22 +189,16 @@ public class RippleBackground extends RelativeLayout {
         }
     }
 
-
     public void startRippleAnimation() {
         if (!isAnimationRunning()) {
-            setupAnimations();
-            for (ImageView rippleView : rippleViewList) {
-                rippleView.setVisibility(VISIBLE);
-            }
             animatorSet.start();
             animatorSetScale.start();
-            animationRunning = true;
         }
     }
 
     public void stopRippleAnimation() {
         animatorSet.cancel();
-        animationRunning = false;
+        animatorSetScale.cancel();
         handler.removeCallbacks(repeatAnimationRunnable);
     }
 
